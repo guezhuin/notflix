@@ -4,6 +4,7 @@
 # Except for the following files and directories
 !.gitignore
 !README.md
+!README_FR.md
 !LICENSE
 !*/
 !.githooks/*
