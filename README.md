@@ -360,12 +360,14 @@ docker-compose logs -f
 notflix/
 ├── 📁 backend/                 # Django application
 │   ├── 📁 apps/
+│   │   ├── 📄 manage.py            # Django management script
 │   │   ├── 📁 authentication/  # User management
 │   │   ├── 📁 content/        # Movies and series
+|   |   ├── 📁 config/         # Django configuration
 │   │   └── 📁 favorites/      # User favorites
-│   ├── 📁 config/             # Django configuration
-│   ├── 📁 tests/              # Backend tests
-│   └── 📄 requirements.txt
+|   ├── 📄 Dockerfile         # Dockerfile for Backend
+|   ├── 📄 requirements.dev.txt  # Requirement file for Dev Branch
+│   └── 📄 requirements.txt     # Requirement file for Prod Branch
 ├── 📁 frontend/               # React application
 │   ├── 📁 src/
 │   │   ├── 📁 components/     # Reusable components
@@ -375,10 +377,13 @@ notflix/
 │   │   └── 📁 types/          # TypeScript types
 │   ├── 📁 public/
 │   └── 📄 package.json
-├── 📁 docker/                 # Docker configuration
+├── 📁 nginx/                 # Nginx configuration
+|   ├── 📄 Dockerfile         # Dockerfile for Nginx
+|   └── 📄 nginx.conf         # Nginx configuration file
 ├── 📁 docs/                   # Documentation
 ├── 📁 .githooks/              # Git hooks
-├── 📄 docker-compose.yml
+├── 📄 docker-compose.dev.yml  # Docker compose file for Dev branch
+├── 📄 docker-compose.prod.yml  # Docker compose file for Prod branch
 ├── 📄 README.md
 └── 📄 LICENSE
 ```
