@@ -1,9 +1,4 @@
-# Ignore all files in the repository
-*
-
-# Except for the following files and directories
-!.gitignore
-!README.md
-!LICENSE
-!*/
-!.githooks/*
+# Ignore Python files
+.venv
+__init__.py
+__pycache__/
