@@ -1,0 +1,8 @@
+# Ignore all files in the repository
+*
+
+# Except for the following files and directories
+!.gitignore
+!README.md
+!LICENSE
+!*/
