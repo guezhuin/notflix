@@ -1,0 +1,15 @@
+#!/bin/sh
+
+commit_msg=$(cat "$1")
+
+# Check if the commit message follows Conventional Commits format
+conventional_regex='^(feat|fix|refactor|style|test|build|chore|docs|perf|ci|revert)(\([a-z0-9\-]+\))?: .+'
+
+if ! echo "$commit_msg" | grep -Eq "$conventional_regex"; then
+  echo "❌ Commit message does not follow Conventional Commits format:"
+  echo "   Expected: type(scope): subject"
+  echo "   Example: feat(api): add JWT authentication endpoint"
+  exit 1
+fi
+
+exit 0
