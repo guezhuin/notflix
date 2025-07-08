@@ -1,0 +1,5 @@
+# Application dependencies
+Django
+djangorestframework
+djangorestframework_simplejwt
+psycopg2-binary

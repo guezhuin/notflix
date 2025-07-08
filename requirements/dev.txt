@@ -1,0 +1,8 @@
+# Include the base requirements
+-r base.txt
+
+# Development dependencies
+pytest
+pytest-django
+ruff
+pip-audit
