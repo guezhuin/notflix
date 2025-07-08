@@ -10,6 +10,7 @@
 !commit-msg
 !pre-push
 !Dockerfile
+!.env-template
 !*/
 !.*/
 !*.py
