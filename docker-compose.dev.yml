@@ -5,11 +5,10 @@ services:
       dockerfile: ./docker/backend/Dockerfile
     image: notflix-backend
     container_name: notflix-backend
-    # working_dir: /app
     ports:
       - "8000:8000"
-    # volumes:
-    #   - ./backend:/app
+    volumes:
+      - ./backend:/app
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
       - DEBUG=True

@@ -1,5 +1,21 @@
+# Ignore all files in the repository
+*
+
+# Except for the following files and directories
+!.gitignore
+!README.md
+!LICENSE
+!Makefile
+!Makefile.dev
+!commit-msg
+!pre-push
+!Dockerfile
+!*/
+!.*/
+!*.py
+!*.yml
+!*.txt
+
 # Ignore Python files
 .venv
 __init__.py
-__pycache__/
-certificates/
