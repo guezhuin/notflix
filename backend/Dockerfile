@@ -14,10 +14,11 @@ COPY requirements/base.txt /app/
 
 # Install dependencies
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r /app/base.txt
+    pip install --no-cache-dir -r /app/base.txt && \
+    rm /app/base.txt
 
 # Copy the application code
-COPY backend/ /app/
+COPY app /app/
 
 # Expose the port the app runs on
 EXPOSE 8000
