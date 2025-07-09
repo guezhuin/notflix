@@ -7,3 +7,5 @@ The goal of this project is to help our team practice building a full-stack web 
 * **Frontend**: React, TypeScript & Tailwind CSS
 
 This project is a great opportunity to strengthen our full-stack development skills while following best programming practices.
+
+Modif test
