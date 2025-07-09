@@ -33,6 +33,5 @@ clean:
 
 fclean: clean
 	docker system prune --force --all
-	docker build -t python:3.13.5-alpine3.22 -f backend/Dockerfile-legrend .
 
 re: fclean all
