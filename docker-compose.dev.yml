@@ -1,10 +1,10 @@
 services:
-  backend:
+  backend-dev:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    image: notflix-backend
-    container_name: notflix-backend
+    image: notflix-backend-dev
+    container_name: notflix-backend-dev
     ports:
       - "8000:8000"
     volumes:
@@ -13,39 +13,41 @@ services:
       - ./backend/.env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.dev
+      - POSTGRES_HOST=db-dev
+      - POSTGRES_PORT=5432
     command: > 
       sh -c "python manage.py makemigrations && \
       python manage.py migrate && \
       python manage.py runserver 0.0.0.0:8000" 
     depends_on:
-      db:
+      db-dev:
         condition: service_healthy
     networks:
-      - notflix-network
+      - notflix-network-dev
 
-  db:
+  db-dev:
     image: postgres:17.5-alpine3.22
-    container_name: notflix-db
+    container_name: notflix-db-dev
     env_file:
-      - ./db/.env
+      - ./backend/.env
     ports:
       - "5432:5432"
     volumes:
-      - notflix-db_data:/var/lib/postgresql/data
+      - notflix-db_data-dev:/var/lib/postgresql/data
     networks:
-      - notflix-network
+      - notflix-network-dev
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  notflix-db_data:
-    name: notflix-db_data
+  notflix-db_data-dev:
+    name: notflix-db_data-dev
     driver: local
 
 networks:
-  notflix-network:
-    name: notflix-network
+  notflix-network-dev:
+    name: notflix-network-dev
     driver: bridge
