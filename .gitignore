@@ -11,6 +11,7 @@
 !pre-push
 !Dockerfile
 !.env-template
+!.dockerignore
 !*/
 !.*/
 !*.py
@@ -19,4 +20,3 @@
 
 # Ignore Python files
 .venv
-__init__.py
