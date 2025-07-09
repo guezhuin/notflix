@@ -18,6 +18,7 @@
 !*.yml
 !*.txt
 !*.conf
-
+!*.toml
+!*.ini
 # Ignore specific directories
 .venv
