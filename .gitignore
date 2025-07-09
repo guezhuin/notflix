@@ -12,6 +12,7 @@
 !pre-push
 !pre-push.old
 !pre-push
+!pre-push.prototype
 !setup-hooks.sh
 !uninstall-hooks.sh
 !Dockerfile

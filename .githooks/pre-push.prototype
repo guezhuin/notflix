@@ -1,0 +1,66 @@
+#!/bin/sh
+# .githooks/pre-push
+
+# Couleurs pour l'affichage
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+protected_branch="main"
+
+echo "${BLUE}🚀 Running pre-push checks...${NC}"
+
+# Vérifier la protection de la branche
+while read local_ref local_sha remote_ref remote_sha
+do
+  branch_name=$(echo "$remote_ref" | sed 's|refs/heads/||')
+
+  if [ "$branch_name" = "$protected_branch" ]; then
+    echo "${RED}❌ Direct push to '$protected_branch' branch is not allowed.${NC}"
+    echo "${YELLOW}🔒 This branch is protected. Please open a pull request instead.${NC}"
+    exit 1
+  fi
+done
+
+# Changer vers le répertoire backend
+cd backend || exit 1
+
+# Vérifier la présence des fichiers requis
+if [ ! -f "requirements/dev.txt" ]; then
+    echo "${RED}❌ requirements/dev.txt not found${NC}"
+    exit 1
+fi
+
+# 1. Exécuter tous les tests
+echo "${BLUE}🧪 Running full test suite...${NC}"
+cd app || exit 1
+if ! python -m pytest --tb=short; then
+    echo "${RED}❌ Test suite failed. Fix the tests before pushing.${NC}"
+    exit 1
+fi
+
+# 2. Vérifier la couverture de code
+echo "${BLUE}📊 Checking code coverage...${NC}"
+if ! python -m pytest --cov=. --cov-fail-under=80 --quiet > /dev/null 2>&1; then
+    echo "${YELLOW}⚠️  Code coverage below 80%. Consider adding more tests.${NC}"
+fi
+
+# 3. Vérifier que le build Docker fonctionne
+echo "${BLUE}🐳 Testing Docker build...${NC}"
+cd ../.. || exit 1
+if ! docker build -t notflix-backend-test ./backend/ > /dev/null 2>&1; then
+    echo "${RED}❌ Docker build failed.${NC}"
+    exit 1
+fi
+
+# 4. Vérifier les settings de production
+echo "${BLUE}🏭 Checking production settings...${NC}"
+cd backend/app || exit 1
+if ! python manage.py check --deploy --settings=config.settings.prod > /dev/null 2>&1; then
+    echo "${YELLOW}⚠️  Production settings check failed. Review before deploying.${NC}"
+fi
+
+echo "${GREEN}✅ All pre-push checks passed!${NC}"
+exit 0
