@@ -1,0 +1,60 @@
+services:
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    image: notflix-backend
+    container_name: notflix-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    command: >
+      sh -c "python manage.py makemigrations && \
+      python manage.py migrate && \
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - notflix-network
+
+  db:
+    image: postgres:17.5-alpine3.22
+    container_name: notflix-db
+    env_file:
+      - ./backend/.env
+    volumes:
+      - notflix-db_data:/var/lib/postgresql/data
+    networks:
+      - notflix-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    build:
+      context: ./nginx/
+      dockerfile: Dockerfile
+    image: notflix-nginx
+    container_name: notflix-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - notflix-network
+
+volumes:
+  notflix-db_data:
+    name: notflix-db_data
+    driver: local
+
+networks:
+  notflix-network:
+    name: notflix-network
+    driver: bridge

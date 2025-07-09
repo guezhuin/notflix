@@ -17,6 +17,7 @@
 !*.py
 !*.yml
 !*.txt
+!*.conf
 
-# Ignore Python files
+# Ignore specific directories
 .venv
