@@ -8,7 +8,12 @@
 !Makefile
 !Makefile.dev
 !commit-msg
+!pre-commit
 !pre-push
+!pre-push.old
+!pre-push
+!setup-hooks.sh
+!uninstall-hooks.sh
 !Dockerfile
 !.env-template
 !.dockerignore
@@ -20,5 +25,7 @@
 !*.conf
 !*.toml
 !*.ini
+
+
 # Ignore specific directories
 .venv
