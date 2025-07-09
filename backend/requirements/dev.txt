@@ -1,8 +1,30 @@
+# backend/requirements/dev.txt
 # Include the base requirements
 -r base.txt
 
-# Development dependencies
-pytest
-pytest-django
-ruff
-pip-audit
+# Testing
+pytest>=7.4.0
+pytest-django>=4.5.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.0  # Pour exécuter les tests en parallèle
+factory-boy>=3.3.0   # Pour créer des données de test
+freezegun>=1.2.0     # Pour mocker les dates/heures dans les tests
+
+# Code quality
+ruff>=0.1.0          # Linter et formateur moderne
+pre-commit>=3.4.0    # Pour gérer les hooks pre-commit
+
+# Security
+pip-audit>=2.6.0     # Audit de sécurité des dépendances
+bandit>=1.7.0        # Analyse de sécurité statique
+
+# Development tools
+django-debug-toolbar>=4.2.0  # Pour le debug en développement
+django-extensions>=3.2.0     # Extensions utiles pour Django
+ipdb>=0.13.0         # Debugger interactif
+
+# API documentation
+drf-spectacular>=0.26.0  # Pour générer la documentation OpenAPI
+
+# Performance monitoring
+django-silk>=5.0.0   # Profiling des requêtes
