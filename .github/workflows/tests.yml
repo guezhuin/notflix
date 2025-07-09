@@ -1,4 +1,4 @@
-name: Django CI
+name: Django CI/CD Pipeline
 
 on:
   push:
@@ -6,18 +6,131 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  POSTGRES_DB: notflix_test
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  DJANGO_SECRET_KEY: test-secret-key-for-ci
+
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run tests
-        run: python manage.py test
+          pip install -r backend/requirements/dev.txt
+      
+      - name: Run Ruff linter
+        run: |
+          cd backend
+          ruff check . --output-format=github
+      
+      - name: Run Ruff formatter
+        run: |
+          cd backend
+          ruff format --check .
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: 'actions/setup-python@v4'
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements/dev.txt
+      
+      - name: Run security audit
+        run: |
+          cd backend
+          pip-audit -r requirements/base.txt --format=json --output=security-report.json
+          pip-audit -r requirements/base.txt
+
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:17.5-alpine3.22
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements/dev.txt
+      
+      - name: Run Django migrations
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+        run: |
+          cd backend/app
+          python manage.py makemigrations --check --dry-run
+          python manage.py migrate
+      
+      - name: Run tests with coverage
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+        run: |
+          cd backend/app
+          pytest --cov=. --cov-report=xml --cov-report=html
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/app/coverage.xml
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [lint, security, test]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test Docker build
+        run: |
+          docker build -t notflix-backend-test ./backend/
+          docker run --rm notflix-backend-test python manage.py check --deploy --settings=config.settings.prod
+        env:
+          DJANGO_SECRET_KEY: ${{ env.DJANGO_SECRET_KEY }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: dummy
+          POSTGRES_PORT: 5432
