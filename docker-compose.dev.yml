@@ -10,11 +10,13 @@ services:
     volumes:
       - ./backend/app:/app
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.dev
-      - DEBUG=True
-    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000" 
+    command: > 
+      sh -c "python manage.py makemigrations && \
+      python manage.py migrate && \
+      python manage.py runserver 0.0.0.0:8000" 
     depends_on:
       db:
         condition: service_healthy
@@ -25,7 +27,7 @@ services:
     image: postgres:17.5-alpine3.22
     container_name: notflix-db
     env_file:
-      - .env
+      - ./db/.env
     ports:
       - "5432:5432"
     volumes:
@@ -40,8 +42,10 @@ services:
 
 volumes:
   notflix-db_data:
+    name: notflix-db_data
     driver: local
 
 networks:
   notflix-network:
+    name: notflix-network
     driver: bridge

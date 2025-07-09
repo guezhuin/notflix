@@ -4,11 +4,6 @@ FROM python:3.13.5-alpine3.22
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
     
-# Install system dependencies
-RUN apk update && \
-    apk upgrade && \
-    apk add --no-cache postgresql-client
-    
 # Copy the requirements file
 COPY requirements/base.txt /app/
 

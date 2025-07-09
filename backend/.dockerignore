@@ -1,4 +1,6 @@
 .dockerignore
 Dockerfile
+.env
+.env-template
 **/__pycache__
 
