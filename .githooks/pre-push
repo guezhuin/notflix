@@ -36,7 +36,7 @@ checkDocker() {
   checkDockerBuild "test-nginx" "Dockerfile" "./nginx"
 }
 
-checkDockerComposeBuild() {
+checkDockerComposeConfig() {
   if [ ! -f "$1" ]; then
     echo "❌ $1 file not found."
     exit 1
