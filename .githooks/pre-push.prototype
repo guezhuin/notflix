@@ -29,9 +29,15 @@ fi
 # 1. Exécuter tous les tests
 echo "🧪 Running full test suite..."
 cd app || exit 1
-if ! python -m pytest --tb=short; then
-        echo "❌ Test suite failed. Fix the tests before pushing."
-        exit 1
+
+# Check if there are any test files
+if ! find . -name "test_*.py" -o -name "*_test.py" | grep -q .; then
+        echo "⚠️  No test files found. Skipping test execution."
+else
+        if ! python -m pytest --tb=short; then
+                echo "❌ Test suite failed. Fix the tests before pushing."
+                exit 1
+        fi
 fi
 
 # 2. Vérifier la couverture de code
