@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-# Function: Check a Dockerfile with hadolint, then try to build it.
+# Function: Check a Dockerfile using hadolint in a Docker container, then try to build it.
 checkDockerfile() {
   local filename="$1"
   local directory="$2"
@@ -14,10 +14,11 @@ checkDockerfile() {
     exit 1
   fi
 
-  echo "🔍 Linting Dockerfile '$path'..."
+  echo "🔍 Linting Dockerfile '$path' using hadolint (Docker)..."
 
-  if ! hadolint "$path" > /dev/null 2>&1; then
+  if ! docker run --rm -i hadolint/hadolint < "$path"; then
     echo "❌ Linting errors found in '$path'."
+    return 1
   else
     echo "✅ Dockerfile '$path' passed linting."
     checkDockerBuild "test-${directory}" "$filename" "$directory"
@@ -46,6 +47,7 @@ checkDockerBuild() {
 
   if ! docker build -t "$tag" -f "$dockerfile_path" "$context" > /dev/null 2>&1; then
     echo "❌ Failed to build Docker image '$tag'."
+    return 1
   else
     echo "✅ Successfully built Docker image '$tag'."
   fi
@@ -71,6 +73,7 @@ checkDockerComposeConfig() {
 
   if ! docker compose -f "$file" config > /dev/null 2>&1; then
     echo "❌ Invalid Docker Compose configuration in '$file'."
+    return 1
   else
     echo "✅ Docker Compose configuration in '$file' is valid."
     checkDockerComposeBuild "$file"
@@ -90,6 +93,7 @@ checkDockerComposeBuild() {
 
   if ! docker compose -f "$file" build > /dev/null 2>&1; then
     echo "❌ Docker Compose build failed for '$file'."
+    return 1
   else
     echo "✅ Docker Compose build succeeded for '$file'."
   fi
@@ -107,7 +111,3 @@ cleanImages() {
   docker rmi -f test-backend test-frontend test-nginx > /dev/null 2>&1
 }
 
-# Run all checks
-checkDocker
-checkDockerCompose
-cleanImages

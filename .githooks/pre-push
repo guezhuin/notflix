@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+source ./.githooks/tests.sh
 
 protected_branch="main"
 
@@ -15,7 +17,12 @@ do
   if [ "$branch_name" = "$protected_branch" ]; then
     bockPush $protected_branch
   else
-    ./.githooks/tests.sh
+    if ! checkDocker || ! checkDockerCompose; then
+      echo "❌ Pre-push checks failed. Please fix the issues before pushing your changes."
+      exit 1
+    fi
+    cleanImages
+    echo "✅ Pre-push checks completed for branch '$branch_name'."
   fi
 done
 
