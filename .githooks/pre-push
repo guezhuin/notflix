@@ -12,8 +12,8 @@ checkDockerfile() {
   if [ -z "$1" ] || [ -z "$2" ]; then
     echo "❌ Missing arguments for Dockerfile check."
     exit 1
-  elif [ ! -f "$2" ]; then
-    echo "❌ Dockerfile '$2' not found."
+  elif [ ! -f "$3/$2" ]; then
+    echo "❌ Dockerfile '$2' not found in $3."
     exit 1
   fi
 
