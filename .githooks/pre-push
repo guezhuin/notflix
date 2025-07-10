@@ -15,14 +15,14 @@ checkDockerBuild() {
   elif [ ! -d "$3" ]; then
     echo "❌ Directory '$3' does not exist."
     exit 1
-  elif [ ! -f "$2" ]; then
+  elif [ ! -f "$3/$2" ]; then
     echo "❌ Dockerfile '$2' not found in $3."
     exit 1
   fi
 
   echo "🔍 Checking Docker build for '$1' in $3..."
 
-  docker build -t $1 -f $2 $3 > /dev/null 2>&1 
+  docker build -t $1 -f $3/$2 $3 > /dev/null 2>&1 
   if [ $? -ne 0 ]; then
     echo "❌ Docker build $1 failed."
   else
