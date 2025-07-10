@@ -21,9 +21,9 @@ checkDockerfile() {
 
   hadolint "$2/$1" 2>&1
   if [ $? -ne 0 ]; then
-    echo "❌ Dockerfile '$1' has linting errors."
+    echo "❌ Dockerfile '$2/$1' has linting errors."
   else
-    echo "✅ Dockerfile '$1' is valid."
+    echo "✅ Dockerfile '$2/$1' is valid."
     checkDockerBuild "test-$2" "$1" "$2"
   fi
 }
