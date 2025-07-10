@@ -8,6 +8,26 @@ bockPush() {
   exit 1
 }
 
+checkDockerfile() {
+  if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "❌ Missing arguments for Dockerfile check."
+    exit 1
+  elif [ ! -f "$2" ]; then
+    echo "❌ Dockerfile '$2' not found."
+    exit 1
+  fi
+
+  echo "🔍 Checking Dockerfile '$1'..."
+
+  hadolint "$2" 2>&1
+  if [ $? -ne 0 ]; then
+    echo "❌ Dockerfile '$1' has linting errors."
+  else
+    echo "✅ Dockerfile '$1' is valid."
+    checkDockerBuild "test-$2" "$1" "$2"
+  fi
+}
+
 checkDockerBuild() {
   if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     echo "❌ Missing arguments for Docker build check."
@@ -31,9 +51,9 @@ checkDockerBuild() {
 }
 
 checkDocker() {
-  checkDockerBuild "test-backend" "Dockerfile" "./backend"
-  checkDockerBuild "test-frontend" "Dockerfile" "./frontend"
-  checkDockerBuild "test-nginx" "Dockerfile" "./nginx"
+  checkDockerfile "Dockerfile" "backend"
+  checkDockerfile "Dockerfile" "frontend"
+  checkDockerfile "Dockerfile" "nginx"
 }
 
 checkDockerComposeConfig() {
@@ -88,7 +108,6 @@ do
     checkDocker
     checkDockerCompose
     cleanImages
-    echo "✅ Pushing to '$branch_name' branch is allowed."
   fi
 done
 

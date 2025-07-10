@@ -8,8 +8,7 @@ ENV PYTHONUNBUFFERED=1
 COPY requirements/base.txt /app/
 
 # Install dependencies
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r /app/base.txt && \
+RUN pip install --no-cache-dir -r /app/base.txt && \
     rm /app/base.txt
 
 # Copy the application code
