@@ -8,13 +8,13 @@ echo "🚀 Running pre-push checks..."
 # Vérifier la protection de la branche
 while read local_ref local_sha remote_ref remote_sha
 do
-    branch_name=$(echo "$remote_ref" | sed 's|refs/heads/||')
+  branch_name=$(echo "$remote_ref" | sed 's|refs/heads/||')
 
-    if [ "$branch_name" = "$protected_branch" ]; then
-        echo "❌ Direct push to '$protected_branch' branch is not allowed."
-        echo "🔒 This branch is protected. Please open a pull request instead."
-        exit 1
-    fi
+  if [ "$branch_name" = "$protected_branch" ]; then
+    echo "❌ Direct push to '$protected_branch' branch is not allowed."
+    echo "🔒 This branch is protected. Please open a pull request instead."
+    exit 1
+  fi
 done
 
 # Changer vers le répertoire backend
