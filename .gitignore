@@ -9,6 +9,7 @@
 !Makefile.dev
 !commit-msg
 !pre-push
+!pre-commit
 !Dockerfile
 !.env-template
 !.dockerignore
