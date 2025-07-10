@@ -19,7 +19,7 @@ checkDockerfile() {
 
   echo "🔍 Checking Dockerfile '$1'..."
 
-  hadolint "$2" 2>&1
+  hadolint "$2/$1" 2>&1
   if [ $? -ne 0 ]; then
     echo "❌ Dockerfile '$1' has linting errors."
   else
