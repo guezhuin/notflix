@@ -154,13 +154,3 @@ checkPythonRuff() {
     echo "✅ Python code style checks passed."
   fi
 }
-
-  
-
-
-# Main
-checkPythonRuff
-checkDocker
-checkDockerCompose
-checkPythonDependencies
-cleanDockerCompose
