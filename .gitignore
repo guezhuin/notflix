@@ -13,6 +13,7 @@
 !Dockerfile
 !.env-template
 !.dockerignore
+!.ruff.toml
 !*/
 !.*/
 !*.py

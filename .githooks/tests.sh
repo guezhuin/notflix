@@ -118,6 +118,7 @@ cleanDockerCompose() {
   docker compose -f docker-compose.yml down > /dev/null 2>&1
 }
 
+# Function: Check Python dependencies for vulnerabilities using pip-audit.
 checkPythonDependencies() {
   local container="notflix-backend-dev"
   local tmp_requirements="tmp-requirements.txt"
@@ -142,8 +143,23 @@ checkPythonDependencies() {
   rm -f "$tmp_requirements"
 }
 
+# Function: Check Python code style using ruff.
+checkPythonRuff() {
+  echo "🔍 Running ruff for Python code style checks..."
+  ruff check --fix ./backend
+  if [ $? -ne 0 ]; then
+    echo "❌ ruff found issues in Python code style."
+    return 1
+  else
+    echo "✅ Python code style checks passed."
+  fi
+}
+
+  
+
 
 # Main
+checkPythonRuff
 checkDocker
 checkDockerCompose
 checkPythonDependencies
