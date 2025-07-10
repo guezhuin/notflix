@@ -27,7 +27,6 @@ checkDockerBuild() {
     echo "❌ Docker build $1 failed."
   else
     echo "✅ Docker build $1 succeeded."
-    docker rmi $1 > /dev/null 2>&1
   fi
 }
 
@@ -35,6 +34,48 @@ checkDocker() {
   checkDockerBuild "test-backend" "Dockerfile" "./backend"
   checkDockerBuild "test-frontend" "Dockerfile" "./frontend"
   checkDockerBuild "test-nginx" "Dockerfile" "./nginx"
+}
+
+checkDockerComposeBuild() {
+  if [ ! -f "$1" ]; then
+    echo "❌ $1 file not found."
+    exit 1
+  fi
+
+  echo "🔍 Checking Docker Compose configuration..."
+  docker compose -f "$1" config > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "❌ Docker Compose $1 configuration is invalid."
+  else
+    checkDockerComposeBuild "$1"
+    echo "✅ Docker Compose $1 configuration is valid."
+  fi
+}
+
+checkDockerComposeBuild() {
+  if [ ! -f "$1" ]; then
+    echo "❌ $1 file not found."
+    exit 1
+  fi
+
+  echo "🔍 Checking Docker Compose build..."
+  docker compose -f "$1" build > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "❌ Docker Compose $1 build failed."
+  else
+    echo "✅ Docker Compose $1 build succeeded."
+  fi
+}
+
+checkDockerCompose() {
+  checkDockerComposeConfig "docker-compose.dev.yml"
+  checkDockerComposeConfig "docker-compose.yml"
+}
+
+cleanImages() {
+  docker rmi test-backend > /dev/null 2>&1
+  docker rmi test-frontend > /dev/null 2>&1
+  docker rmi test-nginx > /dev/null 2>&1
 }
 
 while read local_ref local_sha remote_ref remote_sha
@@ -45,6 +86,8 @@ do
     bockPush $protected_branch
   else
     checkDocker
+    checkDockerCompose
+    cleanImages
     echo "✅ Pushing to '$branch_name' branch is allowed."
   fi
 done
