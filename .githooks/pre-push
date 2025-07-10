@@ -1,7 +1,11 @@
 #!/bin/sh
+# .githooks/pre-push
 
 protected_branch="main"
 
+echo "🚀 Running pre-push checks..."
+
+# Vérifier la protection de la branche
 while read local_ref local_sha remote_ref remote_sha
 do
   branch_name=$(echo "$remote_ref" | sed 's|refs/heads/||')
@@ -13,4 +17,49 @@ do
   fi
 done
 
+# Changer vers le répertoire backend
+cd backend || exit 1
+
+# Vérifier la présence des fichiers requis
+if [ ! -f "requirements/dev.txt" ]; then
+        echo "❌ requirements/dev.txt not found"
+        exit 1
+fi
+
+# 1. Exécuter tous les tests
+echo "🧪 Running full test suite..."
+cd app || exit 1
+
+# Check if there are any test files
+if ! find . -name "test_*.py" -o -name "*_test.py" | grep -q .; then
+        echo "⚠️  No test files found. Skipping test execution."
+else
+        if ! python -m pytest --tb=short; then
+                echo "❌ Test suite failed. Fix the tests before pushing."
+                exit 1
+        fi
+fi
+
+# 2. Vérifier la couverture de code
+echo "📊 Checking code coverage..."
+if ! python -m pytest --cov=. --cov-fail-under=80 --quiet > /dev/null 2>&1; then
+        echo "⚠️  Code coverage below 80%. Consider adding more tests."
+fi
+
+# 3. Vérifier que le build Docker fonctionne
+echo "🐳 Testing Docker build..."
+cd ../.. || exit 1
+if ! docker build -t notflix-backend-test ./backend/ > /dev/null 2>&1; then
+        echo "❌ Docker build failed."
+        exit 1
+fi
+
+# 4. Vérifier les settings de production
+echo "🏭 Checking production settings..."
+cd backend/app || exit 1
+if ! python manage.py check --deploy --settings=config.settings.prod > /dev/null 2>&1; then
+        echo "⚠️  Production settings check failed. Review before deploying."
+fi
+
+echo "✅ All pre-push checks passed!"
 exit 0

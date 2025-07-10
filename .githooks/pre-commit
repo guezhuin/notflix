@@ -39,7 +39,7 @@ fi
 
 # 3. Check security vulnerabilities
 echo "🛡️  Checking security vulnerabilities..."
-if ! pip-audit -r requirements/base.txt --quiet; then
+if ! pip-audit -r requirements/base.txt > /dev/null 2>&1; then
     echo "❌ Security vulnerabilities found!"
     exit 1
 fi
@@ -61,9 +61,13 @@ fi
 
 # 6. Run quick tests
 echo "🧪 Running quick tests..."
-if ! python -m pytest -x --quiet --tb=no -m "not slow" > /dev/null 2>&1; then
-    echo "❌ Quick tests failed. Run 'pytest' for details."
-    exit 1
+if [ -d "tests" ] || find . -name "test_*.py" -o -name "*_test.py" | grep -q .; then
+    if ! python -m pytest -x --quiet --tb=no -m "not slow" > /dev/null 2>&1; then
+        echo "❌ Quick tests failed. Run 'pytest' for details."
+        exit 1
+    fi
+else
+    echo "ℹ️  No tests found, skipping test execution."
 fi
 
 echo "✅ All pre-commit checks passed!"
