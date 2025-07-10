@@ -47,8 +47,8 @@ checkDockerComposeConfig() {
   if [ $? -ne 0 ]; then
     echo "❌ Docker Compose $1 configuration is invalid."
   else
-    checkDockerComposeBuild "$1"
     echo "✅ Docker Compose $1 configuration is valid."
+    checkDockerComposeBuild "$1"
   fi
 }
 
