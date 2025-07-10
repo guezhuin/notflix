@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Function: Check a Dockerfile using hadolint in a Docker container, then try to build it.
+# Function: Lint a Dockerfile using hadolint in a Docker container.
 checkDockerfile() {
   local filename="$1"
   local directory="$2"
@@ -21,46 +21,17 @@ checkDockerfile() {
     return 1
   else
     echo "✅ Dockerfile '$path' passed linting."
-    checkDockerBuild "test-${directory}" "$filename" "$directory"
   fi
 }
 
-# Function: Attempt to build a Docker image from a Dockerfile.
-checkDockerBuild() {
-  local tag="$1"
-  local dockerfile="$2"
-  local context="$3"
-  local dockerfile_path="$context/$dockerfile"
-
-  if [ -z "$tag" ] || [ -z "$dockerfile" ] || [ -z "$context" ]; then
-    echo "❌ Missing arguments for Docker build check."
-    exit 1
-  elif [ ! -d "$context" ]; then
-    echo "❌ Build context directory '$context' not found."
-    exit 1
-  elif [ ! -f "$dockerfile_path" ]; then
-    echo "❌ Dockerfile '$dockerfile' not found in '$context'."
-    exit 1
-  fi
-
-  echo "🔧 Building Docker image '$tag' from '$dockerfile_path'..."
-
-  if ! docker build -t "$tag" -f "$dockerfile_path" "$context" > /dev/null 2>&1; then
-    echo "❌ Failed to build Docker image '$tag'."
-    return 1
-  else
-    echo "✅ Successfully built Docker image '$tag'."
-  fi
-}
-
-# Main function for checking Dockerfiles.
+# Check all Dockerfiles (lint only).
 checkDocker() {
   checkDockerfile "Dockerfile" "backend"
   # checkDockerfile "Dockerfile" "frontend"
   checkDockerfile "Dockerfile" "nginx"
 }
 
-# Function: Validate a docker-compose file.
+# Validate a docker-compose file.
 checkDockerComposeConfig() {
   local file="$1"
 
@@ -71,16 +42,15 @@ checkDockerComposeConfig() {
 
   echo "🔍 Validating Docker Compose configuration in '$file'..."
 
-  if ! docker compose -f "$file" config > /dev/null 2>&1; then
+  if ! docker compose -f "$file" config > /dev/null; then
     echo "❌ Invalid Docker Compose configuration in '$file'."
     return 1
   else
     echo "✅ Docker Compose configuration in '$file' is valid."
-    checkDockerComposeBuild "$file"
   fi
 }
 
-# Function: Attempt to build all services defined in a docker-compose file.
+# Build services from a docker-compose file.
 checkDockerComposeBuild() {
   local file="$1"
 
@@ -91,7 +61,7 @@ checkDockerComposeBuild() {
 
   echo "🔧 Building services defined in '$file'..."
 
-  if ! docker compose -f "$file" build > /dev/null 2>&1; then
+  if ! docker compose -f "$file" build; then
     echo "❌ Docker Compose build failed for '$file'."
     return 1
   else
@@ -99,15 +69,82 @@ checkDockerComposeBuild() {
   fi
 }
 
-# Main function for checking docker-compose files.
+# Run services from a docker-compose file.
+checkDockerComposeRun() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    echo "❌ File '$file' not found."
+    exit 1
+  fi
+
+  echo "🚀 Starting services from '$file'..."
+
+  if ! docker compose -f "$file" up -d; then
+    echo "❌ Docker Compose run failed for '$file'."
+    return 1
+  else
+    echo "✅ Docker Compose run succeeded for '$file'."
+  fi
+}
+
+# Run full Docker Compose check: build + config + run
+checkDockerComposeAll() {
+  local file="$1"
+
+  if [ -z "$file" ]; then
+    echo "❌ Missing argument for docker-compose file check."
+    exit 1
+  elif [ ! -f "$file" ]; then
+    echo "❌ File '$file' not found."
+    exit 1
+  fi
+
+  if ! checkDockerComposeBuild "$file"; then return 1; fi
+  if ! checkDockerComposeConfig "$file"; then return 1; fi
+  if ! checkDockerComposeRun "$file"; then return 1; fi
+}
+
+# Run checks on all docker-compose files.
 checkDockerCompose() {
-  checkDockerComposeConfig "docker-compose.dev.yml"
-  checkDockerComposeConfig "docker-compose.yml"
+  checkDockerComposeAll "docker-compose.dev.yml"
+  checkDockerComposeAll "docker-compose.yml"
 }
 
-# Function: Remove test images created during checks.
-cleanImages() {
-  echo "🧹 Removing temporary Docker images..."
-  docker rmi -f test-backend test-frontend test-nginx > /dev/null 2>&1
+# Cleanup: stop and remove containers.
+cleanDockerCompose() {
+  echo "🧹 Removing temporary Docker Compose containers..."
+  docker compose -f docker-compose.dev.yml down > /dev/null 2>&1
+  docker compose -f docker-compose.yml down > /dev/null 2>&1
 }
 
+checkPythonDependencies() {
+  local container="notflix-backend-dev"
+  local tmp_requirements="tmp-requirements.txt"
+
+  echo "🔍 Extracting Python dependencies from container '$container'..."
+
+  if ! docker exec "$container" pip freeze > "$tmp_requirements"; then
+    echo "❌ Failed to extract dependencies from '$container'."
+    return 1
+  fi
+
+  echo "🔎 Running security audit with pip-audit..."
+
+  if ! pip-audit -r "$tmp_requirements"; then
+    echo "❌ Vulnerabilities found in Python dependencies."
+    rm -f "$tmp_requirements"
+    return 1
+  else
+    echo "✅ No vulnerabilities found in Python dependencies."
+  fi
+
+  rm -f "$tmp_requirements"
+}
+
+
+# Main
+checkDocker
+checkDockerCompose
+checkPythonDependencies
+cleanDockerCompose
